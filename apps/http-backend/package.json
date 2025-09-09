@@ -9,10 +9,16 @@
     "dev": "pnpm run build && pnpm run start"
   },
   "dependencies": {
-    "@repo/typescript-config": "workspace:*",
-    "@repo/validations": "workspace:*",
     "@types/express": "^5.0.3",
-    "express": "^5.1.0"
+    "@types/jsonwebtoken": "^9.0.10",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "@repo/common": "workspace:*",
+    "@repo/db" : "workspace:*"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@repo/validations": "workspace:*"
   },
   "keywords": [],
   "author": "",

@@ -3,6 +3,5 @@
     "compilerOptions": {
         "rootDir": "src",
         "outDir": "dist"
-    },
-    "typeRoots": ["./types", "./node_modules/@types"]
+    }
 }
