@@ -1,13 +1,13 @@
 import express from "express"
 import {signUpSchema, signInSchema, roomSchema} from "@repo/validations"
-import jwt, { TokenExpiredError } from "jsonwebtoken"
+import jwt from "jsonwebtoken"
 import { JWT_TOKEN } from "@repo/common"
 import { prismaClient } from "@repo/db"
 
 interface AuthenticatedRequest extends express.Request{
     user?:{
-        id: String,
-        username: String
+        id: string,
+        username: string
     }
 }
 
@@ -15,7 +15,7 @@ const app = express();
 
 app.use(express.json())
 
-function authenticateToken (req: AuthenticatedRequest, res: express.Response){
+function authenticateToken (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction){
     const authHeaders = req.headers["authorization"]
     const token = authHeaders && authHeaders.split(' ')[1]
 
@@ -31,16 +31,17 @@ function authenticateToken (req: AuthenticatedRequest, res: express.Response){
                 })
             }else{
                 req.user = user
+                next()
             }
         })
     }
 }
 
-app.post("signin", async (req,res)=>{
+app.post("/signin", async (req,res)=>{
     if(signInSchema.safeParse(req.body).success){
         const {username, password} = req.body;
 
-        const user = await prismaClient.user.findUnique({
+        const user = await prismaClient.user.findFirst({
             where: {
                 username: username
             }
@@ -72,12 +73,12 @@ app.post("signin", async (req,res)=>{
     }
 })
 
-app.post("signup", async (req,res)=>{
+app.post("/signup", async (req,res)=>{
 
     if(signUpSchema.safeParse(req.body).success){
         const {username, password, email} = req.body;
 
-        const existingUser = prismaClient.user.findUnique({
+        const existingUser = await prismaClient.user.findFirst({
             where: {
                 username: username
             }
@@ -100,7 +101,7 @@ app.post("signup", async (req,res)=>{
             id: newUser.id
         }, JWT_TOKEN)
 
-        return res.status(400).json({
+        return res.status(200).json({
             token: token,
             message : "Signup successful!"
         })
@@ -111,7 +112,7 @@ app.post("signup", async (req,res)=>{
     }
 })
 
-app.post("create-room", authenticateToken, async (req: AuthenticatedRequest,res)=>{
+app.post("/create-room", authenticateToken, async (req: AuthenticatedRequest,res)=>{
     if(roomSchema.safeParse(req.body).success){
         if (!req.user) {
             return res.status(401).json({
@@ -120,7 +121,7 @@ app.post("create-room", authenticateToken, async (req: AuthenticatedRequest,res)
         }
         const {slug} = req.body
 
-        const existingRoom = await prismaClient.room.findUnique({
+        const existingRoom = await prismaClient.room.findFirst({
             where:{
                 slug: slug
             }
@@ -132,10 +133,10 @@ app.post("create-room", authenticateToken, async (req: AuthenticatedRequest,res)
         }
 
         
-        const newRoom = prismaClient.room.create({
+        const newRoom = await prismaClient.room.create({
             data:{
                 slug: slug,
-                admin: req.user.id
+                adminId: req.user.id
             }
         })
 
@@ -150,4 +151,4 @@ app.post("create-room", authenticateToken, async (req: AuthenticatedRequest,res)
     }
 })
 
-app.listen(3000)
+app.listen(3001)
