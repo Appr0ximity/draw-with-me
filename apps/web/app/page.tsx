@@ -1,102 +1,75 @@
-import Image, { type ImageProps } from "next/image";
-import { Button } from "@repo/ui/button";
-import styles from "./page.module.css";
+'use client';
 
-type Props = Omit<ImageProps, "src"> & {
-  srcLight: string;
-  srcDark: string;
-};
-
-const ThemeImage = (props: Props) => {
-  const { srcLight, srcDark, ...rest } = props;
-
-  return (
-    <>
-      <Image {...rest} src={srcLight} className="imgLight" />
-      <Image {...rest} src={srcDark} className="imgDark" />
-    </>
-  );
-};
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@repo/ui/button';
 
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <ThemeImage
-          className={styles.logo}
-          srcLight="turborepo-dark.svg"
-          srcDark="turborepo-light.svg"
-          alt="Turborepo logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>apps/web/app/page.tsx</code>
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const router = useRouter();
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new/clone?demo-description=Learn+to+implement+a+monorepo+with+a+two+Next.js+sites+that+has+installed+three+local+packages.&demo-image=%2F%2Fimages.ctfassets.net%2Fe5382hct74si%2F4K8ZISWAzJ8X1504ca0zmC%2F0b21a1c6246add355e55816278ef54bc%2FBasic.png&demo-title=Monorepo+with+Turborepo&demo-url=https%3A%2F%2Fexamples-basic-web.vercel.sh%2F&from=templates&project-name=Monorepo+with+Turborepo&repository-name=monorepo-turborepo&repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fturborepo%2Ftree%2Fmain%2Fexamples%2Fbasic&root-directory=apps%2Fdocs&skippable-integrations=1&teamSlug=vercel&utm_source=create-turbo"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://turborepo.com/docs?utm_source"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+  useEffect(() => {
+    // Check if user is already logged in
+    const token = localStorage.getItem('token');
+    if (token) {
+      router.push('/chat');
+    }
+  }, [router]);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute inset-0 bg-black/10"></div>
+      <div className="absolute top-0 left-0 w-full h-full">
+        <div className="absolute top-20 left-20 w-72 h-72 bg-white/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-300/20 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-indigo-300/20 rounded-full blur-3xl"></div>
+      </div>
+      
+      <div className="max-w-md w-full space-y-8 p-8 relative z-10">
+        <div className="text-center">
+          <div className="mb-6">
+            <div className="w-20 h-20 bg-white/20 rounded-2xl mx-auto mb-4 flex items-center justify-center backdrop-blur-sm">
+              <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" />
+                <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 2.828A1 1 0 016 15H4a2 2 0 01-2-2V9a2 2 0 012-2h2.172l1.766-2.828A1 1 0 019 5h2a2 2 0 012 2v2z" />
+              </svg>
+            </div>
+          </div>
+          <h1 className="text-5xl font-bold text-white mb-4 bg-gradient-to-r from-white to-indigo-100 bg-clip-text text-transparent">
+            Draw With Me
+          </h1>
+          <p className="text-indigo-100 text-xl mb-8 font-medium">
+            Connect, chat, and create together in real-time
+          </p>
         </div>
-        <Button appName="web" className={styles.secondary}>
-          Open alert
-        </Button>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com/templates?search=turborepo&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://turborepo.com?utm_source=create-turbo"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to turborepo.com →
-        </a>
-      </footer>
+
+        <div className="space-y-4">
+          <Button
+            onClick={() => router.push('/login')}
+            className="w-full py-4 text-lg font-semibold bg-white/20 backdrop-blur-sm border-2 border-white/30 text-white hover:bg-white/30 hover:border-white/50 shadow-2xl"
+            size="lg"
+          >
+            Sign In
+          </Button>
+          <Button
+            onClick={() => router.push('/signup')}
+            variant="outline"
+            className="w-full py-4 text-lg font-semibold bg-white text-indigo-600 hover:bg-indigo-50 border-2 border-white shadow-2xl"
+            size="lg"
+          >
+            Create Account
+          </Button>
+        </div>
+
+        <div className="text-center text-indigo-200 text-sm space-y-2">
+          <p className="font-medium">Built with modern technology</p>
+          <div className="flex justify-center space-x-4 text-xs">
+            <span className="px-2 py-1 bg-white/10 rounded-full">Next.js</span>
+            <span className="px-2 py-1 bg-white/10 rounded-full">WebSockets</span>
+            <span className="px-2 py-1 bg-white/10 rounded-full">TypeScript</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
