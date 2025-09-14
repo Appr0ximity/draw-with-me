@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@repo/ui/button';
 import { Card } from '@repo/ui/card';
+import { authAPI } from '../../lib/api';
 
 export default function SignupPage() {
   const [username, setUsername] = useState('');
@@ -20,24 +21,16 @@ export default function SignupPage() {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:3001/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, email, password }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        localStorage.setItem('token', data.token);
-        router.push('/chat');
+      const response = await authAPI.signup({ username, email, password });
+      
+      localStorage.setItem('token', response.data.token);
+      router.push('/chat');
+    } catch (error: any) {
+      if (error.response?.data?.message) {
+        setError(error.response.data.message);
       } else {
-        setError(data.message);
+        setError('Network error. Please try again.');
       }
-    } catch (err) {
-      setError('Network error. Please try again.');
     } finally {
       setLoading(false);
     }

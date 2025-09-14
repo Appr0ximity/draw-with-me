@@ -9,12 +9,14 @@
     "dev": "pnpm run build && pnpm run start"
   },
   "dependencies": {
+    "@repo/common": "workspace:*",
+    "@repo/db": "workspace:*",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
+    "cors": "^2.8.5",
     "express": "^5.1.0",
-    "jsonwebtoken": "^9.0.2",
-    "@repo/common": "workspace:*",
-    "@repo/db" : "workspace:*"
+    "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",

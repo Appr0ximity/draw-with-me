@@ -46,7 +46,7 @@ export default function Home() {
         <div className="space-y-4">
           <Button
             onClick={() => router.push('/login')}
-            className="w-full py-4 text-lg font-semibold bg-white/20 backdrop-blur-sm border-2 border-white/30 text-white hover:bg-white/30 hover:border-white/50 shadow-2xl"
+            className="w-full text-lg font-semibold bg-white/20 backdrop-blur-sm border-2 border-white/30 text-white hover:bg-white/30 hover:border-white/50 shadow-2xl"
             size="lg"
           >
             Sign In
@@ -54,20 +54,11 @@ export default function Home() {
           <Button
             onClick={() => router.push('/signup')}
             variant="outline"
-            className="w-full py-4 text-lg font-semibold bg-white text-indigo-600 hover:bg-indigo-50 border-2 border-white shadow-2xl"
+            className="w-full text-lg font-semibold bg-white text-indigo-600 hover:bg-indigo-50 border-2 border-white shadow-2xl"
             size="lg"
           >
             Create Account
           </Button>
-        </div>
-
-        <div className="text-center text-indigo-200 text-sm space-y-2">
-          <p className="font-medium">Built with modern technology</p>
-          <div className="flex justify-center space-x-4 text-xs">
-            <span className="px-2 py-1 bg-white/10 rounded-full">Next.js</span>
-            <span className="px-2 py-1 bg-white/10 rounded-full">WebSockets</span>
-            <span className="px-2 py-1 bg-white/10 rounded-full">TypeScript</span>
-          </div>
         </div>
       </div>
     </div>

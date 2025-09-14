@@ -16,19 +16,25 @@ let users = new Map<string, User>();
 
 function verifyUser (token: string) {
   try {
-    const decoded = jwt.verify(token, JWT_TOKEN)
-    if(decoded !== null){
-      if(typeof decoded == 'object' && 'id' in decoded){
+    const decoded = jwt.verify(token, JWT_TOKEN);
+
+    if (decoded && typeof decoded === 'object') {
+      if ('userId' in decoded) {
+        console.log("userId in token")
+        return (decoded as jwt.JwtPayload).userId as string;
+      } else if ('id' in decoded) {
+        console.log("id in token")
         return (decoded as jwt.JwtPayload).id as string;
-      }else{
-        return null
       }
     }
+
+    return null;
   } catch (error) {
-    console.log(error)
-    return null
+    console.log("JWT verification error:", error);
+    return null;
   }
 }
+
 
 function verifyData(data: any): data is ClientMessage {
   if (typeof data !== "object" || data === null || !("type" in data)) return false;

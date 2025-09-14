@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@repo/ui/button';
-import { Card } from '@repo/ui/card';
+import { roomAPI } from '../../lib/api';
 
 interface Message {
   user: string;
@@ -30,6 +30,7 @@ export default function ChatPage() {
   const [isConnected, setIsConnected] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const wsRef = useRef<WebSocket | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -51,7 +52,7 @@ export default function ChatPage() {
       const tokenParts = token.split('.');
       if (tokenParts.length >= 2 && tokenParts[1]) {
         const payload = JSON.parse(atob(tokenParts[1]));
-        setUsername(payload.id || 'user'); // Using ID as username for now
+        setUsername(payload.userId || 'user'); // Using ID as username for now
       } else {
         setUsername('user');
       }
@@ -60,44 +61,48 @@ export default function ChatPage() {
       setUsername('user');
     }
 
-    // Connect to WebSocket
-    const websocket = new WebSocket(`ws://localhost:8080?token=${token}`);
-    
-    websocket.onopen = () => {
-      console.log('Connected to WebSocket');
-      setIsConnected(true);
-      setWs(websocket);
-    };
-
-    websocket.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.user && data.message) {
-          setMessages(prev => [...prev, {
-            user: data.user,
-            message: data.message,
-            timestamp: new Date().toLocaleTimeString()
-          }]);
-        } else if (typeof data === 'string') {
-          // Handle join/leave room responses
-          console.log('Server message:', data);
+    if(!wsRef.current){
+      // Connect to WebSocket
+      const websocket = new WebSocket(`ws://localhost:8080?token=${token}`);
+      wsRef.current = websocket;
+      websocket.onopen = () => {
+        setIsConnected(true);
+        setWs(websocket);
+      };
+  
+      websocket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.user && data.message) {
+            setMessages(prev => [...prev, {
+              user: data.user,
+              message: data.message,
+              timestamp: new Date().toLocaleTimeString()
+            }]);
+          } else if (typeof data === 'string') {
+            // Handle join/leave room responses
+            console.log('Server message:', data);
+          }
+        } catch (e) {
+          console.log('Server message:', event.data);
         }
-      } catch (e) {
-        console.log('Server message:', event.data);
-      }
-    };
+      };
+  
+      websocket.onclose = () => {
+        console.log('Disconnected from WebSocket');
+        setIsConnected(false);
+        wsRef.current = null
+      };
+  
+      websocket.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+    }
 
-    websocket.onclose = () => {
-      console.log('Disconnected from WebSocket');
-      setIsConnected(false);
-    };
-
-    websocket.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
 
     return () => {
-      websocket.close();
+      wsRef.current?.close();
+      wsRef.current = null
     };
   }, [router]);
 
@@ -138,29 +143,19 @@ export default function ChatPage() {
     if (!newRoomSlug.trim()) return;
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3001/create-room', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ slug: newRoomSlug.trim() })
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setRooms(prev => [...prev, data.room]);
-        setNewRoomSlug('');
-        setShowCreateRoom(false);
-        joinRoom(data.room.slug);
-      } else {
-        alert(data.message);
-      }
-    } catch (error) {
+      const response = await roomAPI.createRoom({ slug: newRoomSlug.trim() });
+      
+      setRooms(prev => [...prev, response.data.room]);
+      setNewRoomSlug('');
+      setShowCreateRoom(false);
+      joinRoom(response.data.room.slug);
+    } catch (error: any) {
       console.error('Error creating room:', error);
-      alert('Failed to create room');
+      if (error.response?.data?.message) {
+        alert(error.response.data.message);
+      } else {
+        alert('Failed to create room');
+      }
     }
   };
 

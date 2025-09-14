@@ -1,4 +1,5 @@
 import express from "express"
+import cors from "cors"
 import {signUpSchema, signInSchema, roomSchema} from "@repo/validations"
 import jwt from "jsonwebtoken"
 import { JWT_TOKEN } from "@repo/common"
@@ -12,6 +13,14 @@ interface AuthenticatedRequest extends express.Request{
 }
 
 const app = express();
+
+// CORS configuration
+app.use(cors({
+    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 app.use(express.json())
 
@@ -151,4 +160,7 @@ app.post("/create-room", authenticateToken, async (req: AuthenticatedRequest,res
     }
 })
 
-app.listen(3001)
+app.listen(3001, () => {
+    console.log('HTTP Backend server running on port 3001');
+    console.log('CORS enabled for frontend on http://localhost:3000');
+});
