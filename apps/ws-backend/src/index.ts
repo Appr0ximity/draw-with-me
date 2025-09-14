@@ -6,11 +6,11 @@ import { prismaClient } from '@repo/db';
 const wss = new WebSocketServer({ port: 8080 });
 
 interface User {
-  rooms: number[],
+  rooms: string[],
   ws: WebSocket
 }
 
-type ClientMessage = {type: "join-room", roomId: number} | {type: "leave-room", roomId: number} | {type: "chat-room", roomId: number, message: string}
+type ClientMessage = {type: "join-room", slug: string} | {type: "leave-room", slug: string} | {type: "chat-room", slug: string, message: string}
 
 let users = new Map<string, User>();
 
@@ -84,37 +84,45 @@ wss.on('connection', function connection(ws, request) {
       case "join-room":
         const room = await prismaClient.room.findFirst({
           where: {
-            id: parsedData.roomId
+            slug: parsedData.slug
           }
         })
         console.log(room)
         if(room){
-          user!.rooms.push(parsedData.roomId)
+          user!.rooms.push(parsedData.slug)
           ws.send("Joined the room")
         }else{
           ws.send("This room doesn't exist!")
         }
         break;
       case "leave-room":
-        if(user!.rooms.includes(parsedData.roomId)){
-          user!.rooms = user!.rooms.filter(room => room !== parsedData.roomId)
+        if(user!.rooms.includes(parsedData.slug)){
+          user!.rooms = user!.rooms.filter(room => room !== parsedData.slug)
           ws.send("Left the room")
         }else{
           ws.send("You're not subbed to this room")
         }
         break;
       case "chat-room":
-        if(user!.rooms.includes(parsedData.roomId)){
+        if(user!.rooms.includes(parsedData.slug)){
+          const room = await prismaClient.room.findFirst({
+            where: {
+              slug: parsedData.slug
+            }
+          })
+          if(!room){
+            ws.send("Invalid slug sent!")
+            return
+          }
           const chat = await prismaClient.chat.create({
             data: {
               message: parsedData.message,
-              roomId: parsedData.roomId,
+              roomId: room?.id,
               userId: userId
             }
           })
-  
           users.forEach((user)=>{
-            if(user.rooms.includes(parsedData.roomId) && user.ws !== ws){
+            if(user.rooms.includes(parsedData.slug) && user.ws !== ws){
               const messageObject = {
                 user: userId,
                 message: parsedData.message
